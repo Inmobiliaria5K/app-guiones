@@ -1,0 +1,7 @@
+{
+  "name": "ViralScript AI",
+  "description": "Transform simple ideas into high-retention viral video scripts (Reels, TikTok, Shorts) using advanced Gemini models.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
