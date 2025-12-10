@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { generateViralHooks, generateScriptContent, transcribeAudio, generateSpeech } from '../services/geminiService';
 import { HookOption, ScriptContent, ScriptDuration, ScriptTone, ScriptBodyPoint, ScriptSectionOption } from '../types';
-import { Mic, Search, Sparkles, Play, StopCircle, Video, ArrowRight, RotateCcw, CheckCircle2, ChevronLeft, ChevronRight, Clock, Users, Copy, FileText, Edit3, Plus, Minus, Trash2 } from 'lucide-react';
+import { Mic, Search, Sparkles, Play, StopCircle, Video, ArrowRight, RotateCcw, CheckCircle2, ChevronLeft, ChevronRight, Clock, Users, Copy, FileText, Edit3, Plus, Minus, Trash2, Fingerprint } from 'lucide-react';
 
 type Step = 'INPUT' | 'HOOKS' | 'SELECTION' | 'FINAL';
 
@@ -12,6 +12,7 @@ export const ScriptGenerator: React.FC = () => {
   const [tone, setTone] = useState<ScriptTone>('medium');
   const [isProcessing, setIsProcessing] = useState(false);
   const [useSearch, setUseSearch] = useState(false);
+  const [userStyle, setUserStyle] = useState<string>('');
   
   // Data State
   const [generatedHooks, setGeneratedHooks] = useState<HookOption[]>([]);
@@ -37,6 +38,12 @@ export const ScriptGenerator: React.FC = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const currentSourceRef = useRef<AudioBufferSourceNode | null>(null);
 
+  useEffect(() => {
+    // Load user style preference on mount
+    const style = localStorage.getItem('userVoiceStyle');
+    if (style) setUserStyle(style);
+  }, []);
+
   const resetState = () => {
     setStep('INPUT');
     setIdea('');
@@ -56,7 +63,7 @@ export const ScriptGenerator: React.FC = () => {
     if (!idea.trim()) return;
     setIsProcessing(true);
     try {
-      const hooks = await generateViralHooks(idea, duration, tone, useSearch);
+      const hooks = await generateViralHooks(idea, duration, tone, useSearch, userStyle);
       setGeneratedHooks(hooks);
       setStep('HOOKS');
     } catch (e) {
@@ -70,7 +77,7 @@ export const ScriptGenerator: React.FC = () => {
     setSelectedHook(hook);
     setIsProcessing(true);
     try {
-      const content = await generateScriptContent(idea, hook, duration, tone, useSearch);
+      const content = await generateScriptContent(idea, hook, duration, tone, useSearch, userStyle);
       setScriptContent(content);
       // Pre-select first options to allow easy generation, or leave empty for manual?
       // Leaving empty to force user interaction as requested ("button to select")
@@ -215,9 +222,16 @@ ${finalCta?.text || '(No seleccionado)'}
       {step === 'INPUT' && (
         <div className="bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700 animate-fade-in space-y-6">
           <div className="flex flex-col gap-4">
-              <h2 className="text-xl font-bold flex items-center gap-2 text-indigo-400">
-                <Sparkles className="w-5 h-5" /> Configura tu Video Viral
-              </h2>
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-indigo-400">
+                    <Sparkles className="w-5 h-5" /> Configura tu Video Viral
+                </h2>
+                {userStyle && (
+                    <div className="flex items-center gap-2 text-xs font-bold text-green-400 bg-green-900/30 px-3 py-1.5 rounded-full border border-green-500/30" title="Usando tu estilo personalizado">
+                        <Fingerprint className="w-3 h-3" /> Estilo Personalizado Activo
+                    </div>
+                )}
+              </div>
               
               {/* Controls Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">

@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { ScriptGenerator } from './components/ScriptGenerator';
 import { LiveCoach } from './components/LiveCoach';
 import { ChatAssistant } from './components/ChatAssistant';
+import { UserProfile } from './components/UserProfile';
 import { AppTab } from './types';
-import { PenTool, Mic2, MessageSquareText, Zap } from 'lucide-react';
+import { PenTool, Mic2, MessageSquareText, User } from 'lucide-react';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AppTab>(AppTab.GENERATOR);
@@ -13,12 +14,14 @@ const App: React.FC = () => {
       {/* Header */}
       <header className="bg-slate-900/95 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="bg-gradient-to-tr from-indigo-500 to-purple-500 p-2 rounded-lg">
-              <Zap className="w-5 h-5 text-white fill-current" />
-            </div>
+          <div className="flex items-center gap-3">
+            <img 
+              src="https://i.ibb.co/1qgbT6L/1735702581691.jpg" 
+              alt="Grupo 5K Logo" 
+              className="h-10 w-auto rounded-md"
+            />
             <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-              ViralScript AI
+              5K Guiones
             </h1>
           </div>
           
@@ -41,7 +44,7 @@ const App: React.FC = () => {
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
               }`}
             >
-              <Mic2 className="w-4 h-4" /> Coach en Vivo
+              <Mic2 className="w-4 h-4" /> Coach
             </button>
             <button
               onClick={() => setActiveTab(AppTab.CHAT)}
@@ -53,6 +56,16 @@ const App: React.FC = () => {
             >
               <MessageSquareText className="w-4 h-4" /> Chat
             </button>
+            <button
+              onClick={() => setActiveTab(AppTab.PROFILE)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                activeTab === AppTab.PROFILE 
+                  ? 'bg-slate-700 text-white shadow-sm' 
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+              }`}
+            >
+              <User className="w-4 h-4" /> Mi Estilo
+            </button>
           </nav>
         </div>
       </header>
@@ -63,6 +76,7 @@ const App: React.FC = () => {
           {activeTab === AppTab.GENERATOR && <ScriptGenerator />}
           {activeTab === AppTab.LIVE_COACH && <LiveCoach />}
           {activeTab === AppTab.CHAT && <ChatAssistant />}
+          {activeTab === AppTab.PROFILE && <UserProfile />}
         </div>
       </main>
 

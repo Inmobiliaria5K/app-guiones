@@ -1,7 +1,8 @@
 export enum AppTab {
   GENERATOR = 'GENERATOR',
   LIVE_COACH = 'LIVE_COACH',
-  CHAT = 'CHAT'
+  CHAT = 'CHAT',
+  PROFILE = 'PROFILE' // New tab for user style analysis
 }
 
 export type ScriptDuration = '30s' | '45s' | '60s' | '90s';

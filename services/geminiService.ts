@@ -96,16 +96,44 @@ const getToneDescription = (tone: ScriptTone): string => {
   }
 };
 
-export const generateViralHooks = async (idea: string, duration: ScriptDuration, tone: ScriptTone, useSearch: boolean): Promise<HookOption[]> => {
+// NEW: Function to analyze user style
+export const analyzeUserStyle = async (sampleText: string): Promise<string> => {
+  const ai = getClient();
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `Analiza el siguiente texto (guion o transcripción) de un creador de contenido. 
+      Extrae y describe detalladamente su "Identidad Verbal" en un párrafo conciso:
+      - Tono y energía.
+      - Tipo de vocabulario (simple, técnico, jerga mexicana, espanglish, etc).
+      - Estructura de frases (cortas y tajantes vs largas y explicativas).
+      - Muletillas o frases características si las hay.
+      
+      Texto de muestra: "${sampleText}"`,
+    });
+    return response.text || "No se pudo analizar el estilo.";
+  } catch (error) {
+    console.error("Error analyzing style:", error);
+    throw error;
+  }
+};
+
+export const generateViralHooks = async (idea: string, duration: ScriptDuration, tone: ScriptTone, useSearch: boolean, userStyle?: string): Promise<HookOption[]> => {
   const ai = getClient();
   const toneDesc = getToneDescription(tone);
   
+  // Incorporate User Style if present
+  const styleInstruction = userStyle 
+    ? `\n\n[IMPORTANTE - PERSONALIZACIÓN DE ESTILO]: El usuario tiene un estilo de voz específico analizado previamente: "${userStyle}". DEBES imitar este estilo en la redacción de los ganchos.` 
+    : '';
+
   let systemPrompt = `
     Eres un Experto en Guiones Virales especializado en audiencias de MÉXICO. Tu única misión ahora es generar 5 GANCHOS (Hooks) extremadamente impactantes.
     
     Contexto:
     - Duración objetivo del video: ${duration} (Ajusta la longitud del gancho acorde).
     - Tono/Nivel Social: ${toneDesc}. ES CRUCIAL QUE EL LENGUAJE SE SIENTA 100% MEXICANO según este tono.
+    ${styleInstruction}
     
     Reglas:
     1. Deben detener el scroll inmediatamente.
@@ -155,9 +183,14 @@ export const generateViralHooks = async (idea: string, duration: ScriptDuration,
   }
 };
 
-export const generateScriptContent = async (idea: string, selectedHook: HookOption, duration: ScriptDuration, tone: ScriptTone, useSearch: boolean): Promise<ScriptContent> => {
+export const generateScriptContent = async (idea: string, selectedHook: HookOption, duration: ScriptDuration, tone: ScriptTone, useSearch: boolean, userStyle?: string): Promise<ScriptContent> => {
   const ai = getClient();
   const toneDesc = getToneDescription(tone);
+
+  // Incorporate User Style if present
+  const styleInstruction = userStyle 
+    ? `\n\n[IMPORTANTE - MÍMESIS DE VOZ]: Debes redactar todo el guion imitando la "Identidad Verbal" del usuario: "${userStyle}". Usa su vocabulario, ritmo y forma de expresarse.` 
+    : '';
 
   let systemPrompt = `
     Eres un Experto en Guiones Virales para audiencia MEXICANA. 
@@ -166,6 +199,7 @@ export const generateScriptContent = async (idea: string, selectedHook: HookOpti
     Contexto:
     - Duración: ${duration}. (Ajusta la cantidad de contenido para que quepa en este tiempo).
     - Tono: ${toneDesc}. USA VOCABULARIO Y EXPRESIONES DE MÉXICO ADECUADAS AL TONO.
+    ${styleInstruction}
     
     Tu tarea es generar OPCIONES MÚLTIPLES para completar el guion.
     Para cada sección (Relevancia, Cuerpo, CTA) debes generar 5 propuestas distintas.
@@ -220,15 +254,15 @@ export const generateScriptContent = async (idea: string, selectedHook: HookOpti
   }
 };
 
-export const transcribeAudio = async (audioBase64: string): Promise<string> => {
+export const transcribeAudio = async (audioBase64: string, mimeType: string = 'audio/wav'): Promise<string> => {
   const ai = getClient();
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: {
         parts: [
-          { inlineData: { mimeType: 'audio/wav', data: audioBase64 } },
-          { text: "Transcribe el audio exactamente como se habla (probablemente en Español de México)." }
+          { inlineData: { mimeType: mimeType, data: audioBase64 } },
+          { text: "Transcribe el audio exactamente como se habla, incluyendo muletillas y estilo (probablemente en Español de México)." }
         ]
       }
     });
