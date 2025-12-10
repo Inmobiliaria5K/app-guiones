@@ -18,7 +18,7 @@ const App: React.FC = () => {
             <img 
               src="https://i.ibb.co/1qgbT6L/1735702581691.jpg" 
               alt="Grupo 5K Logo" 
-              className="h-10 w-auto rounded-md"
+              className="h-12 w-auto rounded-lg object-contain shadow-md shadow-indigo-500/10"
             />
             <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
               5K Guiones
