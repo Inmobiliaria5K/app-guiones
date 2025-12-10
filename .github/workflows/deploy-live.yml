@@ -1,0 +1,32 @@
+name: Deploy to Live Server
+
+on:
+  push:
+    branches: ["live"]
+
+jobs:
+  build-and-deploy:
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build --if-present
+
+      - name: Make deploy script executable
+        run: chmod +x ./scripts/deploy.sh
+
+      - name: Deploy to server
+        env:
+          DEPLOY_DIR: ${{ secrets.DEPLOY_DIR }}
+          RUNNER_USER: ${{ secrets.RUNNER_USER }}
+        run: ./scripts/deploy.sh
